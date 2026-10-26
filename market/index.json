@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Team DSH",
+    "zh": "Team DSH"
+  },
+  "plugins": [
+    {
+      "name": "team-dsh",
+      "title": {
+        "en": "History review pet",
+        "zh": "历史复盘宠物"
+      },
+      "description": {
+        "en": "Select conversations and review requirements and decisions in native DSH chat.",
+        "zh": "选择对话，在 DSH 原生聊天中复盘需求和决定。"
+      },
+      "homepage": "https://github.com/guliqianxun/team_dsh",
+      "repository": {
+        "url": "https://github.com/guliqianxun/team_dsh"
+      },
+      "icon": "https://raw.githubusercontent.com/guliqianxun/team_dsh/89894f3219adb75b9bd9b98543185460313d95b7/assets/whale-idle.webp",
+      "versions": [
+        {
+          "version": "0.1.0-alpha.1",
+          "publishTimestamp": 1793002388,
+          "engines": {
+            "dsh": "0.2.1-rc.2"
+          },
+          "source": {
+            "type": "git",
+            "url": "https://github.com/guliqianxun/team_dsh",
+            "commit": "89894f3219adb75b9bd9b98543185460313d95b7"
+          }
+        }
+      ]
+    }
+  ]
+}
