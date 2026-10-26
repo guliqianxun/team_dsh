@@ -1,0 +1,35 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.page * { box-sizing: border-box; }
+.list { width: 100%; max-width: 960px; min-width: 0; margin: 0 auto; padding: 28px 32px; overflow: auto; }
+.capture { display: flex; align-items: center; gap: 8px; }
+.input { flex: 1; min-width: 0; }
+.input input { width: 100%; }
+.rows { list-style: none; padding: 0; margin: 20px 0 0; }
+.row { display: flex; align-items: flex-start; gap: 12px; border-bottom: 1px solid var(--dsw-alias-border-l3); padding: 12px 0; }
+.toggle { flex: none; margin-top: 4px; }
+.toggle > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.task { flex: 1; min-width: 0; border: 0; background: transparent; padding: 0; color: inherit; font: inherit; text-align: left; overflow-wrap: anywhere; cursor: pointer; }
+.task:disabled { cursor: default; }
+.task:focus-visible { outline: var(--dsw-focus-ring-width, 2px) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 4px; }
+@media (hover: hover) { .task:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; } }
+.heading { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--dsw-alias-border-l3); }
+.heading h1 { flex: 1; min-width: 120px; margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; overflow-wrap: anywhere; }
+.notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; color: var(--dsw-alias-label-primary); overflow-wrap: anywhere; }
+.notice span { flex: 1; min-width: 0; }
+.loading { flex: 1; display: grid; place-items: center; }
+.conversation { display: flex; flex: 1; min-height: 0; min-width: 0; }
+.conversation > * { flex: 1; min-width: 0; min-height: 0; }
+.skeleton { display: grid; gap: 16px; padding: 24px 0; }
+.skeleton span { height: 20px; border-radius: var(--dsw-radius-sm); background: var(--dsw-alias-interactive-bg-hover); }
+@media (max-width: 600px) { .list { padding: 20px 12px; } .heading { padding: 12px; gap: 8px; } }
+:global([data-platform='darwin']) .list { padding-top: calc(var(--dsh-frame-top-clearance, 0px) + 20px); }
+:global([data-platform='darwin']) .heading { padding-top: calc(var(--dsh-frame-top-clearance, 0px) + 12px); }

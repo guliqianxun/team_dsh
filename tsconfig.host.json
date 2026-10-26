@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": [
+      "node"
+    ],
+    "rootDir": "./src",
+    "outDir": "./lib/types/host",
+    "tsBuildInfoFile": "./node_modules/.cache/host.tsbuildinfo"
+  },
+  "include": [
+    "src/index.ts",
+    "src/tasks/**/*.ts",
+    "src/shared/**/*.ts"
+  ]
+}

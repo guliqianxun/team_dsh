@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": [
+      "node"
+    ],
+    "outDir": "./node_modules/.cache/host-test-types",
+    "tsBuildInfoFile": "./node_modules/.cache/host-tests.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "./tsconfig.host.json"
+    }
+  ],
+  "include": [
+    "tests/minimal-host*.test.ts",
+    "vitest.config.ts"
+  ]
+}

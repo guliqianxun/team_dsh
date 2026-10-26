@@ -1,0 +1,16 @@
+node_modules/
+*.tgz
+.playwright-mcp/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+.local/
+.dsh/
+.codex/
+__pycache__/
+*.pyc

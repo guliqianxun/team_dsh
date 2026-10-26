@@ -1,0 +1,2 @@
+# Generated JavaScript preserves whitespace inside dependency template literals.
+lib/*.js whitespace=-blank-at-eol

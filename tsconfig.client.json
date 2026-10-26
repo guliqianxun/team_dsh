@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "ESNext.Disposable", "DOM", "DOM.Iterable"],
+    "types": ["react"],
+    "jsx": "react-jsx",
+    "rootDir": "./src",
+    "outDir": "./lib/types/client",
+    "tsBuildInfoFile": "./node_modules/.cache/client.tsbuildinfo"
+  },
+  // rc.2's public workspace declarations omit their toast augmentation import.
+  "include": ["src/client/**/*.ts", "src/client/**/*.tsx", "src/shared/**/*.ts", "node_modules/@deepseek-ai/dsh-client-ui-workspace/lib/types/client/contract/toast.d.ts"]
+}
