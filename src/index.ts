@@ -4,6 +4,7 @@ import type {} from '@deepseek-ai/dsh-typert-registry'
 import { TaskStore } from './tasks/store.js'
 import { TaskApi } from './tasks/api.js'
 import { TaskConversations } from './tasks/conversation.js'
+import { HistoryApi } from './history/api.js'
 
 /** Installed plugin identity. */
 export const name = 'team-dsh'
@@ -35,6 +36,15 @@ export async function apply(ctx: Context): Promise<void> {
       })
     })
     yield scope.dispose
+    const historyScope = ctx.inject(['sessionQuery', 'sessionPersistence'], async queryCtx => {
+      await queryCtx.effect(function* () {
+        const history = new HistoryApi(queryCtx)
+        yield queryCtx.typert.register(HistoryApi.remote)
+        yield queryCtx.provide('teamDshHistoryApi', history)
+        yield () => history.close()
+      })
+    })
+    yield historyScope.dispose
     yield drain
   })
 }

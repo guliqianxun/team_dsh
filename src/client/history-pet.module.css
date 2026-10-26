@@ -24,7 +24,7 @@
 .sessions label { align-items: flex-start; width: 100%; min-width: 0; }
 .sessions label span { min-width: 0; overflow-wrap: anywhere; }
 .sessions input { flex: none; margin-top: 3px; }
-.metadata { margin: 4px 0 0 26px; font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
+.metadata { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; margin: 4px 0 0 26px; font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
 .actions, .notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .actions { width: 100%; justify-content: flex-end; }
 .notice { color: var(--dsw-alias-label-primary); font-size: 13px; line-height: 20px; overflow-wrap: anywhere; }

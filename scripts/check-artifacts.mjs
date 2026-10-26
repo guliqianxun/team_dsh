@@ -15,6 +15,14 @@ import Storage from '@deepseek-ai/dsh-storage'
 import * as StorageDomain from '@deepseek-ai/dsh-storage-domain'
 import * as StorageJson from '@deepseek-ai/dsh-storage-json'
 import * as host from '../lib/index.js'
+import SessionStore from '@deepseek-ai/dsh-session'
+import SessionQuery from '@deepseek-ai/dsh-session-query'
+import * as SessionJsonl from '@deepseek-ai/dsh-session-persistence-jsonl'
+
+class ReadQuery extends SessionQuery {
+  searchSessions() { throw new Error('No search in the artifact smoke') }
+  searchEvents() { throw new Error('No search in the artifact smoke') }
+}
 
 const require = createRequire(import.meta.url)
 const registrations = []
@@ -39,6 +47,9 @@ try {
   await ctx.plugin(Typert)
   await ctx.plugin(RemoteAccess)
   await ctx.plugin(Gateway)
+  await ctx.plugin(SessionStore)
+  await ctx.plugin(SessionJsonl, { root: join(root, 'sessions'), compression: 'none' })
+  await ctx.plugin(ReadQuery)
   await ctx.plugin(scope => { new HostConnectionService(scope, [], {}) })
   const plugin = await ctx.plugin(host)
   const handler = ctx.connection.createSharedFetchHandler('/api')
@@ -68,9 +79,18 @@ try {
   assert.equal(ctx.get('teamDshTaskApi'), undefined)
   await ctx.plugin(host)
   assert.deepEqual((await call({ kind: 'list' })).value.tasks, [finished.value.task])
+  const source = ctx.sessions.create('artifact-history-source', { meta: { cwd: root } })
+  const measurements = await browser.connection.rpc.call('/api', 'teamDshHistoryApi/analyze', {
+    args: { request: { sourceIds: [source.id] } },
+  })
+  assert.equal(measurements.ok, true)
+  assert.equal(measurements.value.ok, true)
+  assert.equal(measurements.value.sources[0].sessionId, source.id)
+  assert.equal(measurements.value.sources[0].capturedThroughSeq, -1)
+  assert.deepEqual(measurements.value.sources[0].usageTotals.cacheReadTokens, { knownSum: null, reported: 0, missing: 0 })
 } finally {
   try { await browser.fiber.dispose() } finally {
     try { await ctx.fiber.dispose() } finally { await rm(root, { recursive: true, force: true }) }
   }
 }
-console.log('Built browser module and task Gateway: passed')
+console.log('Built browser module, task Gateway and history Gateway: passed')

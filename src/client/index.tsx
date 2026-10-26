@@ -22,6 +22,8 @@ import { cssText } from './panel.module.css'
 import { HistoryPetController } from './history-controller.js'
 import { HistoryPet } from './history-pet.js'
 import { cssText as petCssText } from './history-pet.module.css'
+import { historyResultSchema } from '../shared/history.js'
+import { formatHistoryPrompt } from './history-report.js'
 
 export const name = 'team-dsh'
 export const inject = ['slots', 'locale', 'layout', 'connection', 'sessions', 'uiSession', 'uiConversation', 'uiWorkspace',
@@ -76,9 +78,17 @@ export function apply(ctx: Context): void {
       if (!result.ok) throw new Error('Conversation references unavailable')
       return result.value
     },
+    analyze: async (sourceIds, signal) => {
+      const reply = await connection.rpc.call('/api', 'teamDshHistoryApi/analyze', { args: { request: { sourceIds } } }, signal)
+      signal.throwIfAborted()
+      if (!reply.ok) throw new Error('History measurements unavailable')
+      const result = historyResultSchema.parse(reply.value)
+      if (!result.ok) throw new Error(`History measurements failed: ${result.error}`)
+      return result.sources
+    },
     openSession: id => ctx.uiWorkspace.openSession(id),
     newSessionId: () => brandString<SessionId>(crypto.randomUUID()),
-    prompt: mentions => `${t('pet.title')}: ${mentions.join(' · ')}\n\n${t('pet.prompt')}`,
+    prompt: (mentions, analysis) => formatHistoryPrompt(analysis, mentions, t),
   })
   ctx.effect(() => () => pet.dispose(), 'team-dsh: history pet')
   const refresh = new AbortController()

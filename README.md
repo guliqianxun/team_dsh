@@ -6,9 +6,9 @@ A floating history-review pet inside DSH. Click the pet, find conversations by t
 
 The default is the community whale-girl illustration. Open Appearance to choose the cat or a local PNG, JPEG, or WebP image up to 1 MiB. The choice stays in this browser after refresh; clearing site data resets it. Images are not sent to the model.
 
-Native references capture history when the message starts processing. Compacted or long conversations may supply summaries or partial content. The prompt asks for user requirements, changes, assistant suggestions, and unresolved questions, supported by source names and short quotations. It uses the instance’s default model and permissions, with instructions to analyze without calling tools.
+Native references capture history when the message starts processing. Compacted or long conversations may supply summaries or partial content. The development review starts with work and observed outcomes, then covers effective approaches, friction, and up to three evidence-backed improvements. Outcomes distinguish user confirmation, assistant reports, and unverified claims. Each suggestion names when to apply it, what to do, and how to check the next comparable task; a copyable prompt or project-instruction draft is included only when supported. Short or inconclusive histories receive a short review without invented patterns. It uses the instance’s default model and permissions, with instructions to analyze without calling tools or applying suggestions.
 
-Selected conversation content is sent to the configured model service and incurs normal model usage. This preview reviews text and existing compaction summaries. Larger batches, reusable review summaries, actual tool analysis, and token/cache analysis are not implemented yet.
+Selected conversation content and measured usage are sent to the configured model service and incur normal model usage. The development version also records tool counts, explicit errors, call-to-result elapsed time, unfinished calls, and provider-reported token/cache usage in the review message. Unknown values stay unknown; recovery records do not imply tool failure. Each source has a cutoff and event sequence numbers: use **View conversation** beside that source in the pet, then open **Trajectory** to verify them. Details show the first 100 tool calls and 100 model usage records per source; totals cover the whole captured log. Separate highlights retain up to five entries each for explicit errors, unfinished calls, longest recorded intervals, and largest reported total-token samples across the whole log. These rankings do not establish waste, prices, or causes; samples without total tokens are excluded from that ranking and remain in missing-data counts. Text references are captured later and can have a different cutoff. Larger batches and reusable review summaries remain unimplemented. The published `v0.1.0-alpha.1` tag still provides text-only reviews.
 
 The existing task list remains: create a task from one sentence, open its native conversation, and manually check or uncheck completion.
 
@@ -46,7 +46,8 @@ Public release commits must include the current `lib/` build. The package has no
 | --- | --- |
 | `src/index.ts` | Host lifecycle |
 | `src/tasks/` | Task storage, Session association, page requests |
-| `src/shared/task.ts` | Shared wire fields |
+| `src/history/` | Owner-only selected-log measurements |
+| `src/shared/` | Shared task and measurement fields |
 | `src/client/` | Floating pet, conversation selection and submission, task list |
 | `tests/` | Data preservation, associations, page interactions |
 

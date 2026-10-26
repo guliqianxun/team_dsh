@@ -3,23 +3,25 @@ import type { ISessions, SessionReference, SubmissionHandle } from '@deepseek-ai
 import { createSnapshotStore, type ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { SessionReferenceMentionCandidate } from '@deepseek-ai/dsh-session-reference/types'
+import type { HistoryAnalysis } from '../shared/history.js'
 
 /** Acceptance means inbox admission, never completion of the review. */
 export interface HistoryPetSnapshot {
   busy: boolean
-  error: 'start' | 'unknown' | null
+  error: 'start' | 'analysis' | 'unknown' | null
   sessionId: SessionId | null
   accepted: boolean
 }
 
-/** Public native services; the controller never reads or copies source transcripts. */
+/** Native references and measured metadata; no source transcript is copied into the client. */
 export interface HistoryPetServices {
   sessions: Pick<ISessions, 'create' | 'retain'>
   hasSession(id: SessionId, signal: AbortSignal): Promise<boolean>
   mentions(targetId: SessionId, sourceId: SessionId, signal: AbortSignal): Promise<SessionReferenceMentionCandidate[]>
+  analyze(sourceIds: readonly SessionId[], signal: AbortSignal): Promise<HistoryAnalysis[]>
   openSession(id: SessionId): void
   newSessionId(): SessionId
-  prompt(mentions: string[]): string
+  prompt(mentions: string[], analysis: HistoryAnalysis[]): string
 }
 
 /** Pet actions and their observable admission state. */
@@ -28,6 +30,7 @@ export interface HistoryPetFace {
   start(sourceIds: readonly SessionId[]): Promise<boolean>
   retry(): Promise<boolean>
   openResult(): void
+  openSource(id: SessionId): void
   clearError(): void
 }
 
@@ -55,7 +58,8 @@ export class HistoryPetController {
   /** @returns Observable state and explicit user actions. */
   face(): HistoryPetFace {
     return { hooks: { historyPet: this.snapshot }, start: ids => this.start(ids), retry: () => this.retry(),
-      openResult: () => this.openResult(), clearError: () => this.clearError() }
+      openResult: () => this.openResult(), openSource: id => { if (!this.closed) this.services.openSession(id) },
+      clearError: () => this.clearError() }
   }
 
   /** @param sourceIds One to three distinct selected source Sessions. */
@@ -109,6 +113,7 @@ export class HistoryPetController {
     const operation = new AbortController()
     this.operation = operation
     const { signal } = operation
+    let readingAnalysis = false
     this.snapshot.update(state => { state.busy = true; state.error = null; state.accepted = false; state.sessionId = attempt.sessionId })
     try {
       signal.throwIfAborted()
@@ -141,7 +146,14 @@ export class HistoryPetController {
           return candidate.mention
         }))
         signal.throwIfAborted()
-        attempt.text = this.services.prompt(mentions)
+        readingAnalysis = true
+        const analysis = await this.services.analyze(attempt.sources, signal)
+        signal.throwIfAborted()
+        if (analysis.length !== attempt.sources.length || analysis.some((source, index) => source.sessionId !== attempt.sources[index])) {
+          throw new Error('Measurements do not match selected sources')
+        }
+        attempt.text = this.services.prompt(mentions, analysis)
+        readingAnalysis = false
       }
       attempt.submission ??= session.beginSubmission({ mode: 'queue', text: attempt.text, attachments: [] })
       signal.throwIfAborted()
@@ -153,8 +165,8 @@ export class HistoryPetController {
       signal.throwIfAborted()
       this.snapshot.update(state => { state.accepted = result.ok && result.value.accepted; state.error = state.accepted ? shown ? null : 'start' : 'unknown' })
       return result.ok && result.value.accepted
-    } catch {
-      if (!this.closed) this.snapshot.update(state => { state.error = attempt.sent ? 'unknown' : 'start' })
+    } catch (_error) {
+      if (!this.closed) this.snapshot.update(state => { state.error = attempt.sent ? 'unknown' : readingAnalysis ? 'analysis' : 'start' })
       return false
     } finally {
       this.abandonUnsent()

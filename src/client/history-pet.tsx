@@ -133,7 +133,10 @@ export function HistoryPet(props: Props) {
         : <ul className={css.sessions}>{matches.map(row => <li key={row.id}>
           <Checkbox checked={selected.includes(row.id)} disabled={state.busy || state.error === 'unknown' || (!selected.includes(row.id) && selected.length >= 3)} label={row.displayTitle}
             onChange={checked => setSelection(checked ? [...selected, row.id] : selected.filter(id => id !== row.id))} />
-          <div className={css.metadata}><time dateTime={new Date(row.updatedAt).toISOString()}>{new Date(row.updatedAt).toLocaleString()}</time></div>
+          <div className={css.metadata}>
+            <time dateTime={new Date(row.updatedAt).toISOString()}>{new Date(row.updatedAt).toLocaleString()}</time>
+            <Button size="sm" variant="ghost" onClick={() => { props.openSource(row.id); setOpen(false) }}>{t('pet.viewConversation')}</Button>
+          </div>
         </li>)}</ul>}
       {sessions.phase === 'ready' && matches.length === 0 && <p className={css.empty}>{t('pet.empty')}</p>}
       <DisclosureRow icon={null} title={t('pet.appearance')} open={appearanceOpen || appearance.error !== null} expandable expandOnRowClick

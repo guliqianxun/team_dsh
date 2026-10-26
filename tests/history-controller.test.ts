@@ -4,6 +4,7 @@ import type { SessionBinding, SessionReference } from '@deepseek-ai/dsh-api-sess
 import type { SessionRequestId } from '@deepseek-ai/dsh-api-session-controller/types'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { HistoryPetController, type HistoryPetServices } from '../src/client/history-controller.js'
+import { historyAnalysisSchema, usageFields } from '../src/shared/history.js'
 
 const id = (value: string) => brandString<SessionId>(value)
 const sourceA = id('source-a'), sourceB = id('source-b'), sourceC = id('source-c'), target = id('review-target')
@@ -36,13 +37,30 @@ function fixture() {
     sessionId: source, label: source, sameWorkspace: false, createdAt: 0, mention: `@[${source}](native-${source})`,
   }])
   const openSession = vi.fn<HistoryPetServices['openSession']>()
-  const services: HistoryPetServices = { sessions: { create, retain }, hasSession, mentions, openSession,
+  const analyze = vi.fn<HistoryPetServices['analyze']>(async sources => sources.map(sessionId => historyAnalysisSchema.parse({
+    sessionId, capturedThroughSeq: -1, inheritedEventCount: 0, tools: [], calls: [], omittedCalls: 0,
+    unmatchedResults: 0, recoveryResults: 0, usage: [], omittedUsage: 0,
+    highlights: { errors: [], unfinished: [], slowest: [], largestUsage: [] },
+    usageTotals: Object.fromEntries(usageFields.map(field => [field, { knownSum: null, reported: 0, missing: 0 }])),
+  })))
+  const services: HistoryPetServices = { sessions: { create, retain }, hasSession, mentions, openSession, analyze,
     newSessionId: () => target, prompt: values => `Review the selected history:\n${values.join('\n')}` }
   const controller = new HistoryPetController(services)
-  return { controller, create, hasSession, retain, references, mentions, openSession, beginSubmission, prompt, abandon, binding }
+  return { controller, create, hasSession, retain, references, mentions, analyze, openSession, beginSubmission, prompt, abandon, binding }
 }
 
 describe('history pet admission', () => {
+  it('opens a source through native navigation without starting a review or reading measurements', () => {
+    const f = fixture()
+    f.controller.face().openSource(sourceA)
+    expect(f.openSession).toHaveBeenCalledExactlyOnceWith(sourceA)
+    expect(f.create).not.toHaveBeenCalled()
+    expect(f.analyze).not.toHaveBeenCalled()
+    expect(f.prompt).not.toHaveBeenCalled()
+    f.controller.dispose()
+    f.controller.face().openSource(sourceB)
+    expect(f.openSession).toHaveBeenCalledTimes(1)
+  })
   it('accepts only one to three distinct sources without creating on an invalid selection', async () => {
     const f = fixture()
     for (const sources of [[], [sourceA, sourceA], [sourceA, sourceB, sourceC, id('four')]]) {
@@ -52,6 +70,7 @@ describe('history pet admission', () => {
     expect(f.create).not.toHaveBeenCalled()
     expect(await f.controller.start([sourceA, sourceB, sourceC])).toBe(true)
     expect(f.mentions.mock.calls.map(([, source]) => source)).toEqual([sourceA, sourceB, sourceC])
+    expect(f.analyze.mock.calls.map(([sources]) => sources)).toEqual([[sourceA, sourceB, sourceC]])
     expect(f.prompt.mock.calls[0]?.[0]).toEqual([{ type: 'text', text: 'Review the selected history:\n@[source-a](native-source-a)\n@[source-b](native-source-b)\n@[source-c](native-source-c)' }])
     expect(f.controller.snapshot.getSnapshot()).toEqual({ busy: false, error: null, sessionId: target, accepted: true })
     expect(f.references[0]?.release).toHaveBeenCalledTimes(1)
@@ -99,6 +118,7 @@ describe('history pet admission', () => {
     expect(await f.controller.retry()).toBe(true)
     expect(f.create).toHaveBeenCalledTimes(1)
     expect(f.mentions).toHaveBeenCalledTimes(1)
+    expect(f.analyze).toHaveBeenCalledTimes(1)
     expect(f.beginSubmission).toHaveBeenCalledTimes(1)
     expect(f.prompt.mock.calls[1]?.[0]).toEqual(f.prompt.mock.calls[0]?.[0])
     expect(f.prompt.mock.calls.map(call => call[3])).toEqual(['review-request', 'review-request'])
@@ -107,6 +127,35 @@ describe('history pet admission', () => {
     expect(await f.controller.retry()).toBe(true)
     expect(f.prompt).toHaveBeenCalledTimes(2)
     f.controller.dispose()
+  })
+
+  it('stops before sending when measurement fails or returns another source, and releases late reads on disposal', async () => {
+    const f = fixture()
+    f.analyze.mockRejectedValueOnce(new Error('Source unavailable'))
+    expect(await f.controller.start([sourceA])).toBe(false)
+    expect(f.controller.snapshot.getSnapshot().error).toBe('analysis')
+    expect(f.prompt).not.toHaveBeenCalled()
+    expect(f.references[0]?.release).toHaveBeenCalledTimes(1)
+    expect(await f.controller.retry()).toBe(true)
+    expect(f.analyze.mock.calls.map(([sources]) => sources)).toEqual([[sourceA], [sourceA]])
+    f.controller.dispose()
+
+    const mismatch = fixture()
+    mismatch.analyze.mockResolvedValueOnce([])
+    expect(await mismatch.controller.start([sourceA])).toBe(false)
+    expect(mismatch.prompt).not.toHaveBeenCalled()
+    mismatch.controller.dispose()
+
+    const late = fixture(), held = deferred<Awaited<ReturnType<HistoryPetServices['analyze']>>>()
+    late.analyze.mockReturnValueOnce(held.promise)
+    const starting = late.controller.start([sourceA])
+    await vi.waitFor(() => expect(late.analyze).toHaveBeenCalledTimes(1))
+    late.controller.dispose()
+    expect(late.analyze.mock.calls[0]?.[1].aborted).toBe(true)
+    held.resolve([])
+    expect(await starting).toBe(false)
+    expect(late.prompt).not.toHaveBeenCalled()
+    expect(late.references[0]?.release).toHaveBeenCalledTimes(1)
   })
 
   it('recovers an unknown create by its verified original ID and never sends to a replacement ID', async () => {

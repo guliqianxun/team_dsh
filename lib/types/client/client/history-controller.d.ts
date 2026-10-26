@@ -3,21 +3,23 @@ import type { ISessions } from '@deepseek-ai/dsh-api-session-controller/client';
 import { type ObservableSnapshot } from '@deepseek-ai/dsh-client-store';
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
 import type { SessionReferenceMentionCandidate } from '@deepseek-ai/dsh-session-reference/types';
+import type { HistoryAnalysis } from '../shared/history.js';
 /** Acceptance means inbox admission, never completion of the review. */
 export interface HistoryPetSnapshot {
     busy: boolean;
-    error: 'start' | 'unknown' | null;
+    error: 'start' | 'analysis' | 'unknown' | null;
     sessionId: SessionId | null;
     accepted: boolean;
 }
-/** Public native services; the controller never reads or copies source transcripts. */
+/** Native references and measured metadata; no source transcript is copied into the client. */
 export interface HistoryPetServices {
     sessions: Pick<ISessions, 'create' | 'retain'>;
     hasSession(id: SessionId, signal: AbortSignal): Promise<boolean>;
     mentions(targetId: SessionId, sourceId: SessionId, signal: AbortSignal): Promise<SessionReferenceMentionCandidate[]>;
+    analyze(sourceIds: readonly SessionId[], signal: AbortSignal): Promise<HistoryAnalysis[]>;
     openSession(id: SessionId): void;
     newSessionId(): SessionId;
-    prompt(mentions: string[]): string;
+    prompt(mentions: string[], analysis: HistoryAnalysis[]): string;
 }
 /** Pet actions and their observable admission state. */
 export interface HistoryPetFace {
@@ -27,6 +29,7 @@ export interface HistoryPetFace {
     start(sourceIds: readonly SessionId[]): Promise<boolean>;
     retry(): Promise<boolean>;
     openResult(): void;
+    openSource(id: SessionId): void;
     clearError(): void;
 }
 /** A same-page retry reuses the Session, source text and original RPC identity. */
