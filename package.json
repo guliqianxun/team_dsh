@@ -1,8 +1,13 @@
 {
   "name": "team-dsh",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "A history-review pet for DSH conversations",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "tag": "next",
+    "registry": "https://registry.npmjs.org/"
+  },
   "author": "guliqianxun",
   "repository": { "type": "git", "url": "git+https://github.com/guliqianxun/team_dsh.git" },
   "homepage": "https://github.com/guliqianxun/team_dsh",

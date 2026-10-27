@@ -6,9 +6,9 @@ A floating history-review pet inside DSH. Click the pet, find conversations by t
 
 The default is the community whale-girl illustration. Open Appearance to choose the cat or a local PNG, JPEG, or WebP image up to 1 MiB. The choice stays in this browser after refresh; clearing site data resets it. Images are not sent to the model.
 
-Native references capture history when the message starts processing. Compacted or long conversations may supply summaries or partial content. The development review starts with work and observed outcomes, then covers effective approaches, friction, and up to three evidence-backed improvements. Outcomes distinguish user confirmation, assistant reports, and unverified claims. Each suggestion names when to apply it, what to do, and how to check the next comparable task; a copyable prompt or project-instruction draft is included only when supported. Short or inconclusive histories receive a short review without invented patterns. Reviews use the instance’s default model and native permissions in the dedicated Team DSH preset, which mounts only the native read-only market tool. Ordinary reviews make no tool calls; optional recommendations permit native read-only market lookup without applying proposals.
+Native references capture history when the message starts processing. Compacted or long conversations may supply summaries or partial content. The review starts with work and observed outcomes, then covers effective approaches, friction, and up to three evidence-backed improvements. Outcomes distinguish user confirmation, assistant reports, and unverified claims. Each suggestion names when to apply it, what to do, and how to check the next comparable task; a copyable prompt or project-instruction draft is included only when supported. Short or inconclusive histories receive a short review without invented patterns. Reviews use the instance’s default model and native permissions in the dedicated Team DSH preset, which mounts only the native read-only market tool. Ordinary reviews make no tool calls; optional recommendations permit native read-only market lookup without applying proposals.
 
-Selected conversation content and measured usage are sent to the configured model service and incur normal model usage. The development version also records tool counts, explicit errors, call-to-result elapsed time, unfinished calls, and provider-reported token/cache usage in the review message. Unknown values stay unknown; recovery records do not imply tool failure. Each source has a cutoff and event sequence numbers: use **View conversation** beside that source in the pet, then open **Trajectory** to verify them. Details show the first 100 tool calls and 100 model usage records per source; totals cover the whole captured log. Separate highlights retain up to five entries each for explicit errors, unfinished calls, longest recorded intervals, and largest reported total-token samples across the whole log. These rankings do not establish waste, prices, or causes; samples without total tokens are excluded from that ranking and remain in missing-data counts. Text references are captured later and can have a different cutoff. Larger batches and reusable review summaries remain unimplemented. The published `v0.1.0-alpha.1` tag still provides text-only reviews.
+Selected conversation content and measured usage are sent to the configured model service and incur normal model usage. The preview also records tool counts, explicit errors, call-to-result elapsed time, unfinished calls, and provider-reported token/cache usage in the review message. Unknown values stay unknown; recovery records do not imply tool failure. Each source has a cutoff and event sequence numbers: use **View conversation** beside that source in the pet, then open **Trajectory** to verify them. Details show the first 100 tool calls and 100 model usage records per source; totals cover the whole captured log. Separate highlights retain up to five entries each for explicit errors, unfinished calls, longest recorded intervals, and largest reported total-token samples across the whole log. These rankings do not establish waste, prices, or causes; samples without total tokens are excluded from that ranking and remain in missing-data counts. Text references are captured later and can have a different cutoff. Larger batches and reusable review summaries remain unimplemented. The published `v0.1.0-alpha.1` tag still provides text-only reviews.
 
 Check **Include tool recommendations** before **Start review** to connect findings with tools; the option is off by default. The model first identifies task-specific needs from the selected history, distinguishes observed gaps from hypotheses and optional improvements, then derives its own search terms for DSH's native read-only `plugin_market` tool. No keywords are required. Results explain what may be missing, which existing capabilities or methods to try, and how a small set of complementary plugins could work together. Similar plugins are alternatives, and one sufficient plugin or no plugin is a valid outcome. Suggestions use compatible versions actually returned by configured markets; publisher claims and proposed interoperability still need verification. Searches and their results remain in the same native conversation and Trajectory. Enable Custom plugin markets and configure sources in Discover to support lookup. If lookup is unavailable or fails, the review continues with the recommendation limit stated explicitly. Inspecting and installing candidates remains your action in native Discover.
 
@@ -18,13 +18,21 @@ The plugin saves task names, completion, and main Session associations. DSH prov
 
 ## Install
 
-Supports DSH `0.2.1-rc.2` Web. Release commits contain built files and do not require installation scripts:
+The `0.1.0-alpha.2` preview targets DSH `0.2.1-rc.2` and includes built files; no local build or installation scripts are needed. Install into the Web profile:
 
 ```sh
-dsh plugin --profile web add 'github:guliqianxun/team_dsh#v0.1.0-alpha.1' --ignore-scripts
+dsh plugin --profile web add team-dsh@0.1.0-alpha.2 --ignore-scripts
 ```
 
 Start that profile normally. Click the floating pet to review history; **Team DSH** in the sidebar opens the task list. Report problems or suggestions through [GitHub Issues](https://github.com/guliqianxun/team_dsh/issues).
+
+For Desktop, launch the application once to initialize its profile, then fully quit it before installing. Use Desktop's bundled `dsh` command if it is not on your PATH:
+
+```sh
+dsh plugin --profile desktop add team-dsh@0.1.0-alpha.2 --ignore-scripts
+```
+
+Reopen Desktop after installation. Web has been tested; Desktop has not yet been tested. Use `team-dsh@next` instead of the exact version to install the current npm preview. Plugin installation does not transfer conversation history between devices.
 
 You can also enable DSH's experimental Custom plugin markets bundle and add `https://raw.githubusercontent.com/guliqianxun/team_dsh/main/market/index.json` in Discover. This project provides that index; listings in other community markets are managed independently.
 
@@ -37,7 +45,7 @@ npm ci
 npm test
 npm run build
 npm pack --ignore-scripts
-dsh plugin --profile <profile> add ./team-dsh-0.1.0-alpha.1.tgz --ignore-scripts
+dsh plugin --profile <profile> add ./team-dsh-0.1.0-alpha.2.tgz --ignore-scripts
 ```
 
 Public release commits must include the current `lib/` build. The package has no install or pack lifecycle scripts; run the tests and build above explicitly before publishing.
