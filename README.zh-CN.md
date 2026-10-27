@@ -18,27 +18,29 @@ DSH 原生引用在消息开始处理时捕获历史，已压缩或过长的对�
 
 ## 安装
 
-`0.1.0-alpha.2` 预览版面向 DSH `0.2.1-rc.2`，包含构建文件，无需本机编译或运行安装脚本。安装到 Web profile：
+DSH `0.2.1-rc.2` 用户请继续使用 `team-dsh@0.1.0-alpha.2`。`0.1.0-alpha.3` 预览版使用 rc.3 依赖，要求 DSH `0.2.1-rc.3`；安装前先升级 DSH。
+
+`0.1.0-alpha.3` 预览版面向 DSH `0.2.1-rc.3`，包含构建文件，无需本机编译或运行安装脚本。安装到 Web profile：
 
 ```sh
-dsh plugin --profile web add team-dsh@0.1.0-alpha.2 --ignore-scripts
+dsh plugin --profile web add team-dsh@0.1.0-alpha.3 --ignore-scripts
 ```
 
-随后按原来的方式启动该 profile。点击悬浮宠物开始复盘，侧栏 **Team DSH** 打开任务清单。问题与建议请提交到 [GitHub Issues](https://github.com/guliqianxun/team_dsh/issues)。
+随后按原来的方式启动该 profile，在**插件**页面启用已安装的 **Team DSH** 插件包。点击悬浮宠物开始复盘，侧栏 **Team DSH** 打开任务清单。问题与建议请提交到 [GitHub Issues](https://github.com/guliqianxun/team_dsh/issues)。
 
-Desktop 需先启动一次以初始化 profile，再完全退出应用后安装。如果 PATH 中没有 `dsh`，使用 Desktop 自带的命令：
+Desktop 需先启动一次以初始化 profile，再完全退出应用后安装。以下命令必须使用 Desktop 自带的 `dsh`（`resources/runtime/cli/bin/dsh`，Windows 为 `dsh.cmd`）；npm 安装的 CLI 不能管理专用 Desktop profile：
 
 ```sh
-dsh plugin --profile desktop add team-dsh@0.1.0-alpha.2 --ignore-scripts
+dsh plugin --profile desktop add team-dsh@0.1.0-alpha.3 --ignore-scripts
 ```
 
-安装后重新打开 Desktop。Web 已完成实测，Desktop 尚未实测。把固定版本换成 `team-dsh@next` 可安装当前 npm 预览版。安装插件不会迁移其他设备的历史对话。
+安装后重新打开 Desktop，在**插件**页面启用 **Team DSH**。Web 已完成实测，Desktop 尚未实测。把固定版本换成 `team-dsh@next` 可安装当前 npm 预览版。安装插件不会迁移其他设备的历史对话。
 
 也可启用 DSH 的实验功能“自定义插件市场”，在 Discover 添加索引源：`https://raw.githubusercontent.com/guliqianxun/team_dsh/main/market/index.json`。这是本项目提供的索引；其他社区市场的收录由各自维护者决定。
 
 ## 开发
 
-需要 Node `^22.19.0 || >=24.0.0`、npm 和 DSH `0.2.1-rc.2`。
+需要 Node `^22.19.0 || >=24.0.0`、npm 和 DSH `0.2.1-rc.3`。
 
 ```sh
 npm ci
@@ -50,7 +52,7 @@ npm pack --ignore-scripts
 将生成的预览包加入自己的 DSH profile：
 
 ```sh
-dsh plugin --profile <profile> add ./team-dsh-0.1.0-alpha.2.tgz --ignore-scripts
+dsh plugin --profile <profile> add ./team-dsh-0.1.0-alpha.3.tgz --ignore-scripts
 ```
 
 公开发行提交需要同时包含当前 `lib/` 构建文件。包没有安装或打包生命周期脚本，发布前显式运行上述测试与构建。

@@ -18,34 +18,36 @@ The plugin saves task names, completion, and main Session associations. DSH prov
 
 ## Install
 
-The `0.1.0-alpha.2` preview targets DSH `0.2.1-rc.2` and includes built files; no local build or installation scripts are needed. Install into the Web profile:
+DSH `0.2.1-rc.2` users should keep `team-dsh@0.1.0-alpha.2`. The `0.1.0-alpha.3` preview uses rc.3 dependencies and requires DSH `0.2.1-rc.3`; upgrade DSH before installing it.
+
+The `0.1.0-alpha.3` preview targets DSH `0.2.1-rc.3` and includes built files; no local build or installation scripts are needed. Install into the Web profile:
 
 ```sh
-dsh plugin --profile web add team-dsh@0.1.0-alpha.2 --ignore-scripts
+dsh plugin --profile web add team-dsh@0.1.0-alpha.3 --ignore-scripts
 ```
 
-Start that profile normally. Click the floating pet to review history; **Team DSH** in the sidebar opens the task list. Report problems or suggestions through [GitHub Issues](https://github.com/guliqianxun/team_dsh/issues).
+Start that profile normally, then enable the installed **Team DSH** bundle on the **Plugins** page. Click the floating pet to review history; **Team DSH** in the sidebar opens the task list. Report problems or suggestions through [GitHub Issues](https://github.com/guliqianxun/team_dsh/issues).
 
-For Desktop, launch the application once to initialize its profile, then fully quit it before installing. Use Desktop's bundled `dsh` command if it is not on your PATH:
+For Desktop, launch the application once to initialize its profile, then fully quit it before installing. Run the following with Desktop's bundled `dsh` command (`resources/runtime/cli/bin/dsh`, or `dsh.cmd` on Windows). The npm CLI cannot manage the reserved Desktop profile:
 
 ```sh
-dsh plugin --profile desktop add team-dsh@0.1.0-alpha.2 --ignore-scripts
+dsh plugin --profile desktop add team-dsh@0.1.0-alpha.3 --ignore-scripts
 ```
 
-Reopen Desktop after installation. Web has been tested; Desktop has not yet been tested. Use `team-dsh@next` instead of the exact version to install the current npm preview. Plugin installation does not transfer conversation history between devices.
+Reopen Desktop after installation and enable **Team DSH** on the **Plugins** page. Web has been tested; Desktop has not yet been tested. Use `team-dsh@next` instead of the exact version to install the current npm preview. Plugin installation does not transfer conversation history between devices.
 
 You can also enable DSH's experimental Custom plugin markets bundle and add `https://raw.githubusercontent.com/guliqianxun/team_dsh/main/market/index.json` in Discover. This project provides that index; listings in other community markets are managed independently.
 
 ## Develop
 
-Requires Node `^22.19.0 || >=24.0.0`, npm, and DSH `0.2.1-rc.2`.
+Requires Node `^22.19.0 || >=24.0.0`, npm, and DSH `0.2.1-rc.3`.
 
 ```sh
 npm ci
 npm test
 npm run build
 npm pack --ignore-scripts
-dsh plugin --profile <profile> add ./team-dsh-0.1.0-alpha.2.tgz --ignore-scripts
+dsh plugin --profile <profile> add ./team-dsh-0.1.0-alpha.3.tgz --ignore-scripts
 ```
 
 Public release commits must include the current `lib/` build. The package has no install or pack lifecycle scripts; run the tests and build above explicitly before publishing.
