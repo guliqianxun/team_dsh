@@ -88,7 +88,7 @@ export function apply(ctx: Context): void {
     },
     openSession: id => ctx.uiWorkspace.openSession(id),
     newSessionId: () => brandString<SessionId>(crypto.randomUUID()),
-    prompt: (mentions, analysis) => formatHistoryPrompt(analysis, mentions, t),
+    prompt: (mentions, analysis, include) => formatHistoryPrompt(analysis, mentions, t, include),
   })
   ctx.effect(() => () => pet.dispose(), 'team-dsh: history pet')
   const refresh = new AbortController()

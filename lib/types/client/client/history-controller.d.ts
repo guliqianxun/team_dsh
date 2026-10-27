@@ -19,14 +19,14 @@ export interface HistoryPetServices {
     analyze(sourceIds: readonly SessionId[], signal: AbortSignal): Promise<HistoryAnalysis[]>;
     openSession(id: SessionId): void;
     newSessionId(): SessionId;
-    prompt(mentions: string[], analysis: HistoryAnalysis[]): string;
+    prompt(mentions: string[], analysis: HistoryAnalysis[], includeRecommendations: boolean): string;
 }
 /** Pet actions and their observable admission state. */
 export interface HistoryPetFace {
     hooks: {
         historyPet: ObservableSnapshot<HistoryPetSnapshot>;
     };
-    start(sourceIds: readonly SessionId[]): Promise<boolean>;
+    start(sourceIds: readonly SessionId[], includeRecommendations?: boolean): Promise<boolean>;
     retry(): Promise<boolean>;
     openResult(): void;
     openSource(id: SessionId): void;
@@ -44,8 +44,8 @@ export declare class HistoryPetController {
     constructor(services: HistoryPetServices);
     /** @returns Observable state and explicit user actions. */
     face(): HistoryPetFace;
-    /** @param sourceIds One to three distinct selected source Sessions. */
-    start(sourceIds: readonly SessionId[]): Promise<boolean>;
+    /** @param sourceIds One to three distinct selected source Sessions. @param includeRecommendations Whether this review may use native read-only market tools after identifying task needs. */
+    start(sourceIds: readonly SessionId[], includeRecommendations?: boolean): Promise<boolean>;
     /** Retry the existing admission without changing its identity or source selection. */
     retry(): Promise<boolean>;
     /** Show the actual native conversation even when its admission response was lost. */

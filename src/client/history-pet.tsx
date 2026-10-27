@@ -34,6 +34,7 @@ export function HistoryPet(props: Props) {
   const [refreshing, setRefreshing] = useState(false), [listError, setListError] = useState(false)
   const [appearance, setAppearance] = useState(readAppearance)
   const [appearanceOpen, setAppearanceOpen] = useState(false), [uploading, setUploading] = useState(false)
+  const [includeRecommendations, setIncludeRecommendations] = useState(false)
   const [imageFailed, setImageFailed] = useState(false)
   const upload = useRef<HTMLInputElement>(null), uploadVersion = useRef(0)
   const button = useRef<HTMLButtonElement>(null), drag = useRef<Drag | null>(null), suppressClick = useRef(false)
@@ -59,7 +60,7 @@ export function HistoryPet(props: Props) {
   }
   function show() { setOpen(true); void refresh() }
   async function submit(retry: boolean) {
-    const accepted = await (retry ? props.retry() : props.start(selected))
+    const accepted = await (retry ? props.retry() : props.start(selected, includeRecommendations))
     if (mounted.current && accepted) setOpen(false)
   }
   function chooseAppearance(value: PetAppearance) {
@@ -139,6 +140,11 @@ export function HistoryPet(props: Props) {
           </div>
         </li>)}</ul>}
       {sessions.phase === 'ready' && matches.length === 0 && <p className={css.empty}>{t('pet.empty')}</p>}
+      <div className={css.market}>
+        <Checkbox checked={includeRecommendations} disabled={state.busy || state.error === 'unknown'}
+          onChange={setIncludeRecommendations} label={t('pet.market.include')} />
+        {includeRecommendations && <p className={css.limit}>{t('pet.market.help')}</p>}
+      </div>
       <DisclosureRow icon={null} title={t('pet.appearance')} open={appearanceOpen || appearance.error !== null} expandable expandOnRowClick
         onToggle={() => { setAppearanceOpen(!(appearanceOpen || appearance.error !== null)); if (appearance.error) setAppearance(previous => ({ ...previous, error: null })) }}>
         <div className={css.appearance}>

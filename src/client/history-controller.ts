@@ -21,13 +21,13 @@ export interface HistoryPetServices {
   analyze(sourceIds: readonly SessionId[], signal: AbortSignal): Promise<HistoryAnalysis[]>
   openSession(id: SessionId): void
   newSessionId(): SessionId
-  prompt(mentions: string[], analysis: HistoryAnalysis[]): string
+  prompt(mentions: string[], analysis: HistoryAnalysis[], includeRecommendations: boolean): string
 }
 
 /** Pet actions and their observable admission state. */
 export interface HistoryPetFace {
   hooks: { historyPet: ObservableSnapshot<HistoryPetSnapshot> }
-  start(sourceIds: readonly SessionId[]): Promise<boolean>
+  start(sourceIds: readonly SessionId[], includeRecommendations?: boolean): Promise<boolean>
   retry(): Promise<boolean>
   openResult(): void
   openSource(id: SessionId): void
@@ -36,6 +36,7 @@ export interface HistoryPetFace {
 
 interface ReviewAttempt {
   sources: readonly SessionId[]
+  includeRecommendations: boolean
   requestedId: SessionId
   createAttempted: boolean
   sessionId: SessionId | null
@@ -57,13 +58,13 @@ export class HistoryPetController {
 
   /** @returns Observable state and explicit user actions. */
   face(): HistoryPetFace {
-    return { hooks: { historyPet: this.snapshot }, start: ids => this.start(ids), retry: () => this.retry(),
+    return { hooks: { historyPet: this.snapshot }, start: (ids, include) => this.start(ids, include), retry: () => this.retry(),
       openResult: () => this.openResult(), openSource: id => { if (!this.closed) this.services.openSession(id) },
       clearError: () => this.clearError() }
   }
 
-  /** @param sourceIds One to three distinct selected source Sessions. */
-  async start(sourceIds: readonly SessionId[]): Promise<boolean> {
+  /** @param sourceIds One to three distinct selected source Sessions. @param includeRecommendations Whether this review may use native read-only market tools after identifying task needs. */
+  async start(sourceIds: readonly SessionId[], includeRecommendations = false): Promise<boolean> {
     if (this.closed || this.operation !== null) return false
     if (this.attempt?.sent && !this.snapshot.getSnapshot().accepted) {
       this.snapshot.update(state => { state.error = 'unknown' }); return false
@@ -73,9 +74,10 @@ export class HistoryPetController {
     }
     if (this.attempt !== null && !this.snapshot.getSnapshot().accepted) {
       this.attempt.sources = [...sourceIds]
+      this.attempt.includeRecommendations = includeRecommendations
       this.attempt.text = null
     } else {
-      this.attempt = { sources: [...sourceIds], requestedId: this.services.newSessionId(), createAttempted: false, sessionId: null,
+      this.attempt = { sources: [...sourceIds], includeRecommendations, requestedId: this.services.newSessionId(), createAttempted: false, sessionId: null,
         text: null, submission: null, sent: false }
     }
     return this.run(this.attempt)
@@ -125,7 +127,7 @@ export class HistoryPetController {
         }
         if (attempt.sessionId === null) {
           attempt.createAttempted = true
-          const id = await this.services.sessions.create({ sessionId: attempt.requestedId })
+          const id = await this.services.sessions.create({ sessionId: attempt.requestedId, agentPreset: 'team-dsh-review' })
           signal.throwIfAborted()
           if (id !== attempt.requestedId) throw new Error('Created Session differs from the requested identity')
           attempt.sessionId = id
@@ -152,7 +154,7 @@ export class HistoryPetController {
         if (analysis.length !== attempt.sources.length || analysis.some((source, index) => source.sessionId !== attempt.sources[index])) {
           throw new Error('Measurements do not match selected sources')
         }
-        attempt.text = this.services.prompt(mentions, analysis)
+        attempt.text = this.services.prompt(mentions, analysis, attempt.includeRecommendations)
         readingAnalysis = false
       }
       attempt.submission ??= session.beginSubmission({ mode: 'queue', text: attempt.text, attachments: [] })

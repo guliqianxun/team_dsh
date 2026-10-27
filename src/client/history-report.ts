@@ -47,8 +47,10 @@ export function formatHistoryAnalysis(sources: readonly HistoryAnalysis[], menti
   return [`## ${t('pet.analysis.title')}`, t('pet.analysis.scope'), ...sections].join('\n\n')
 }
 
-/** @param sources Selected measurements. @param mentions Canonical source references. @param t Active locale. @returns The complete instruction and evidence message persisted by native Session submission. */
-export function formatHistoryPrompt(sources: readonly HistoryAnalysis[], mentions: readonly string[], t: Translate): string {
-  return [`${t('pet.title')}: ${mentions.join(' · ')}`, t('pet.prompt'), t('pet.prompt.evidence'), t('pet.prompt.actions'),
+/** @param sources Selected measurements. @param mentions Canonical source references. @param t Active locale. @param includeRecommendations Allows native market lookup after evidence-based need identification. @returns Instructions and measurements persisted by native Session submission; native tool events record later searches. */
+export function formatHistoryPrompt(sources: readonly HistoryAnalysis[], mentions: readonly string[], t: Translate, includeRecommendations = false): string {
+  const instructions = includeRecommendations ? [t('pet.market.prompt'), t('pet.prompt.evidence')]
+    : [t('pet.prompt'), t('pet.prompt.evidence'), t('pet.prompt.actions')]
+  return [`${t('pet.title')}: ${mentions.join(' · ')}`, ...instructions,
     formatHistoryAnalysis(sources, mentions, t)].join('\n\n')
 }

@@ -44,12 +44,39 @@ function fixture() {
     usageTotals: Object.fromEntries(usageFields.map(field => [field, { knownSum: null, reported: 0, missing: 0 }])),
   })))
   const services: HistoryPetServices = { sessions: { create, retain }, hasSession, mentions, openSession, analyze,
-    newSessionId: () => target, prompt: values => `Review the selected history:\n${values.join('\n')}` }
+    newSessionId: () => target, prompt: (values, _analysis, include) => `Review the selected history:\n${values.join('\n')}${include ? '\nFind task needs and search native markets.' : ''}` }
   const controller = new HistoryPetController(services)
   return { controller, create, hasSession, retain, references, mentions, analyze, openSession, beginSubmission, prompt, abandon, binding }
 }
 
 describe('history pet admission', () => {
+  it('freezes the opted-in workflow and reuses the same request after an unknown send', async () => {
+    const f = fixture()
+    f.prompt.mockRejectedValueOnce(new Error('Response lost'))
+    expect(await f.controller.face().start([sourceA], true)).toBe(false)
+    const text = f.prompt.mock.calls[0]![0]
+    expect(JSON.stringify(text)).toContain('Find task needs and search native markets.')
+    expect(await f.controller.start([sourceA], false)).toBe(false)
+    expect(f.controller.snapshot.getSnapshot().error).toBe('unknown')
+    expect(await f.controller.retry()).toBe(true)
+    expect(f.create).toHaveBeenCalledExactlyOnceWith({ sessionId: target, agentPreset: 'team-dsh-review' })
+    expect(f.analyze).toHaveBeenCalledTimes(1)
+    expect(f.prompt.mock.calls[1]![0]).toEqual(text)
+    expect(f.beginSubmission).toHaveBeenCalledTimes(1)
+    f.controller.dispose()
+  })
+
+  it('can change recommendation consent before any review message is sent', async () => {
+    const f = fixture()
+    f.analyze.mockRejectedValueOnce(new Error('Source unavailable'))
+    expect(await f.controller.start([sourceA], true)).toBe(false)
+    expect(f.prompt).not.toHaveBeenCalled()
+    expect(await f.controller.start([sourceA], false)).toBe(true)
+    expect(f.create).toHaveBeenCalledTimes(1)
+    expect(f.prompt.mock.calls[0]![0]).toEqual([{ type: 'text', text: 'Review the selected history:\n@[source-a](native-source-a)' }])
+    f.controller.dispose()
+  })
+
   it('opens a source through native navigation without starting a review or reading measurements', () => {
     const f = fixture()
     f.controller.face().openSource(sourceA)
@@ -176,7 +203,7 @@ describe('history pet admission', () => {
     expect(replaced.retain).not.toHaveBeenCalled()
     expect(replaced.controller.snapshot.getSnapshot().sessionId).toBeNull()
     expect(await replaced.controller.retry()).toBe(true)
-    expect(replaced.create.mock.calls.map(call => call[0])).toEqual([{ sessionId: target }, { sessionId: target }])
+    expect(replaced.create.mock.calls.map(call => call[0])).toEqual([{ sessionId: target, agentPreset: 'team-dsh-review' }, { sessionId: target, agentPreset: 'team-dsh-review' }])
     replaced.controller.dispose()
   })
 
@@ -190,7 +217,7 @@ describe('history pet admission', () => {
     expect(f.retain).not.toHaveBeenCalled()
     expect(f.prompt).not.toHaveBeenCalled()
     expect(await f.controller.retry()).toBe(true)
-    expect(f.create.mock.calls.map(call => call[0])).toEqual([{ sessionId: target }, { sessionId: target }])
+    expect(f.create.mock.calls.map(call => call[0])).toEqual([{ sessionId: target, agentPreset: 'team-dsh-review' }, { sessionId: target, agentPreset: 'team-dsh-review' }])
     f.controller.dispose()
   })
 

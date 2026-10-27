@@ -31,9 +31,20 @@ const report = () => historyAnalysisSchema.parse({
 })
 
 describe('history review message', () => {
+  it.each([['en', en], ['zh', zh]] as const)('records the %s needs-first workflow with native search in the same review', (_locale, dictionary) => {
+    const text = formatHistoryPrompt([report()], ['@[Source A](dsh-session:InNvdXJjZS1hIg)'], key => dictionary[key], true)
+    expect(text).toMatchSnapshot()
+    expect(text.match(/dsh-session:/g)).toHaveLength(2)
+    expect(text).toContain(dictionary['pet.market.prompt'])
+    expect(text).toContain(dictionary['pet.prompt.evidence'])
+    expect(text).not.toContain(dictionary['pet.prompt.actions'])
+    expect(text.startsWith(dictionary['pet.title'])).toBe(true)
+  })
+
   it.each([['en', en], ['zh', zh]] as const)('records readable %s measurements, unknowns and native source references', (_locale, dictionary) => {
     const text = formatHistoryPrompt([report()], ['@[Source A](dsh-session:InNvdXJjZS1hIg)'], key => dictionary[key])
     expect(text).toMatchSnapshot()
+    expect(text).not.toContain(dictionary['pet.market.prompt'])
   })
 
   it('escapes measured names and IDs so they cannot add another native source or alter table structure', () => {
