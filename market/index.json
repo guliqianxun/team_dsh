@@ -22,6 +22,30 @@
       "icon": "https://raw.githubusercontent.com/guliqianxun/team_dsh/89894f3219adb75b9bd9b98543185460313d95b7/assets/whale-idle.webp",
       "versions": [
         {
+          "version": "0.1.0-alpha.3",
+          "publishTimestamp": 1793114790,
+          "engines": {
+            "dsh": "0.2.1-rc.3"
+          },
+          "source": {
+            "type": "git",
+            "url": "https://github.com/guliqianxun/team_dsh",
+            "commit": "db5d470df07e1ddeeea4dc88322b962a4f45e1af"
+          }
+        },
+        {
+          "version": "0.1.0-alpha.2",
+          "publishTimestamp": 1793092216,
+          "engines": {
+            "dsh": "0.2.1-rc.2"
+          },
+          "source": {
+            "type": "git",
+            "url": "https://github.com/guliqianxun/team_dsh",
+            "commit": "a20d8c78a30a5f64a93aa78246af1730f53bbcd8"
+          }
+        },
+        {
           "version": "0.1.0-alpha.1",
           "publishTimestamp": 1793002388,
           "engines": {
